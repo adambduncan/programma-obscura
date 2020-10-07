@@ -8,7 +8,7 @@
 
 To build: `make build`
 
-To use: `make test1` to run using `midi-text-dump/midi-testfile-1.mid` as input file (or `make test2`, `make test3`, or `make test4` for additional files) 
+To use: `make test1` to run using `midi-text-dump/midi-testfile-1.mid` as the input file (or `make test2`, `make test3`, or `make test4` for additional files) 
 
 Consult [Makefile](https://github.com/adambduncan/programma-obscura/blob/master/midi-text-dump/Makefile) for details
 
