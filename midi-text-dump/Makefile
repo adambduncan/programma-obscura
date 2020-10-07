@@ -1,11 +1,11 @@
 
-build: Makefile midi-text-dump2.c; cc -Wall -g -o midi-text-dump2 midi-text-dump2.c
+build: Makefile midi-text-dump.c; cc -Wall -g -o midi-text-dump midi-text-dump.c
 	
-run1: ; ./midi-text-dump2 midi-testfile-1.mid
+test1: ; ./midi-text-dump midi-testfile-1.mid
 
-run2: ; ./midi-text-dump2 midi-testfile-2.mid
+test2: ; ./midi-text-dump midi-testfile-2.mid
 
-run3: ; ./midi-text-dump2 midi-testfile-3.mid
+test3: ; ./midi-text-dump midi-testfile-3.mid
 
-run4: ; ./midi-text-dump2 midi-testfile-4.mid
+test4: ; ./midi-text-dump midi-testfile-4.mid
     
