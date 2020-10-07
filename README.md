@@ -1,6 +1,6 @@
 # programma-obscura
 
-**Herein lies a collection of odds-and-ends, code samples, and other things which don't warrant a separate repo.**
+**A collection of odds-and-ends, code samples, and other things which don't warrant a separate repo.**
 
 ---
 
