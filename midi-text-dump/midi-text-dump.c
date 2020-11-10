@@ -1,6 +1,9 @@
 /**
  * midi-text-dump.c
  * Convert a standard MIDI file to a text representation (string of bytes in hex)
+ * Acronyms: VLV = "Variable Length Value"
+ * MSB = "Most Significant Byte", SMSB = "2nd Most Significant Byte"
+ * LSB = "Least Significant Byte", SLSB = "2nd Least Significant Byte"
  */
 
 #include <stdio.h>
@@ -17,7 +20,7 @@ struct MIDIEvent
 struct MIDITrack
 {
     int length;
-    unsigned char *data;
+    unsigned char *unparsed_data;
     int numEvents;
     struct MIDIEvent *events;
 };
@@ -35,34 +38,74 @@ struct MIDIFile
 /*prints binary MIDI file in a clear, aligned way*/
 void printHexAsText(unsigned char *bytelist, int size)
 {
-    int bytesperline = 0;
+    int bytesperline = 16;
 
     for (int h = 0; h < size; h++)
     {
-        printf("[%4d]:", h);
-
         unsigned char val = *(bytelist + h);
 
         if (val == 0)
-            printf("[00]"); /*print 00 instead of 0*/
-
+            printf("00"); //print 00 instead of 0
         else if ((val > 0) && (val < 16))
-            printf("[0%X]", val); /*single hex digit 1 thru F*/
-
+            printf("0%X", val); //single hex digit 1 thru F
         else
-            printf("[%X]", val); /*everything else*/
+            printf("%X", val); //everything else
 
-        /*newline every 16 bytes, easier to compare to hex editor display*/
+        --bytesperline;
+
+        //newline every 16 bytes, easier to compare to hex editor display
         if (bytesperline == 0)
         {
             printf("\n");
-            bytesperline = 0;
+            bytesperline = 16;
+        }
+        else
+        {
+            printf(" ");
         }
     }
 
-    printf("\n"); /*print a final newline*/
+    printf("\n"); //print a final newline
 }
 
+/***************************************************************************/
+void printXML(struct MIDIFile *f)
+{
+    printf("<?xml version=\"1.0\"?>\n");
+    printf("<midifile name=%s trackcount=%d format=%d timescheme=%d timevalue=%d>\n",
+           f->name, f->numtracks, f->format, f->timescheme, f->timevalue);
+
+    for (int i = 0; i < f->numtracks; i++)
+    {
+        printf("    <track number=%d eventcount=%d>\n", (i + 1), f->tracks[i].numEvents);
+
+        for (int j = 0; j < f->tracks[i].numEvents; j++)
+        {
+            printf("        <event deltatime=%d datalength=%d>\n",
+                   f->tracks[i].events[j].deltatime, f->tracks[i].events[j].datalength);
+
+            printf("            ");
+
+            for (int k = 0; k < f->tracks[i].events[j].datalength; k++)
+            {
+                if ((f->tracks[i].events[j].data[k] <= 0xF) && (f->tracks[i].events[j].data[k] >= 0x0))
+                {
+                    printf("0%X ", f->tracks[i].events[j].data[k]);
+                }
+                else
+                {
+                    printf("%X ", f->tracks[i].events[j].data[k]);
+                }
+            }
+            printf("\n        </event>\n");
+        }
+        printf("    </track>\n");
+    }
+
+    printf("</midifile>");
+}
+
+/***************************************************************************/
 int getNumTracks(unsigned char *bytelist, int size)
 {
     int numtracks;
@@ -79,6 +122,7 @@ int getNumTracks(unsigned char *bytelist, int size)
     return numtracks;
 }
 
+/***************************************************************************/
 int getFormat(unsigned char *bytelist, int size)
 {
     int format;
@@ -95,6 +139,7 @@ int getFormat(unsigned char *bytelist, int size)
     return format;
 }
 
+/***************************************************************************/
 int getTimeScheme(unsigned char *bytelist, int size)
 {
     int timescheme;
@@ -111,6 +156,7 @@ int getTimeScheme(unsigned char *bytelist, int size)
     return timescheme;
 }
 
+/***************************************************************************/
 int getTimeValue(unsigned char *bytelist, int size, int timescheme)
 {
     int timevalue;
@@ -129,18 +175,22 @@ int getTimeValue(unsigned char *bytelist, int size, int timescheme)
     return timevalue;
 }
 
+/***************************************************************************/
+// VLV = "Variable Length Value"
+// MSB = "Most Significant Byte", SMSB = "2nd Most Significant Byte"
+// LSB = "Least Significant Byte", SLSB = "2nd Least Significant Byte"
 int processVLV(char MSB, char SMSB, char SLSB, char LSB)
 {
     unsigned int result = 0;
 
     result += (MSB & 0b01111111);
-    result <<= 8;
+    result <<= 7;
 
     result += (SMSB & 0b01111111);
-    result <<= 8;
+    result <<= 7;
 
     result += (SLSB & 0b01111111);
-    result <<= 8;
+    result <<= 7;
 
     result += LSB;
 
@@ -578,42 +628,6 @@ void parseMIDIEvents(unsigned char *data, int size, struct MIDIEvent *events)
     }
 }
 
-void printXML(struct MIDIFile *f)
-{
-    printf("<?xml version=\"1.0\"?>\n");
-    printf("<midifile name=%s trackcount=%d format=%d timescheme=%d timevalue=%d>\n",
-           f->name, f->numtracks, f->format, f->timescheme, f->timevalue);
-
-    for (int i = 0; i < f->numtracks; i++)
-    {
-        printf("    <track number=%d eventcount=%d>\n", (i + 1), f->tracks[i].numEvents);
-
-        for (int j = 0; j < f->tracks[i].numEvents; j++)
-        {
-            printf("        <event deltatime=%d datalength=%d>\n",
-                   f->tracks[i].events[j].deltatime, f->tracks[i].events[j].datalength);
-
-            printf("            ");
-
-            for (int k = 0; k < f->tracks[i].events[j].datalength; k++)
-            {
-                if ((f->tracks[i].events[j].data[k] <= 0xF) && (f->tracks[i].events[j].data[k] >= 0x0))
-                {
-                    printf("0%X ", f->tracks[i].events[j].data[k]);
-                }
-                else
-                {
-                    printf("%X ", f->tracks[i].events[j].data[k]);
-                }
-            }
-            printf("\n        </event>\n");
-        }
-        printf("    </track>\n");
-    }
-
-    printf("</midifile>");
-}
-
 int main(int argc, char *argv[])
 {
     FILE *in_file;
@@ -694,28 +708,33 @@ int main(int argc, char *argv[])
                 /*store track size (in bytes)*/
                 f->tracks[i].length = tsize;
 
-                f->tracks[i].data = malloc(tsize);
-                tcurrentindex++;
-
                 /*copy track data from the array of file data (raw_data_array)
                 and store it in the MIDITrack struct*/
+
+                f->tracks[i].unparsed_data = malloc(tsize);
+                tcurrentindex++;
+
                 for (int j = 0; j < tsize; j++)
                 {
-                    f->tracks[i].data[j] = raw_data_array[tcurrentindex];
+                    f->tracks[i].unparsed_data[j] = raw_data_array[tcurrentindex];
                     tcurrentindex++;
                 }
             }
 
-            /*tracks have been loaded into appropriate structs, 
+            printf("\n");
+            printHexAsText(raw_data_array, numBytes);
+            printf("\n");
+
+            /*raw track data has been loaded into appropriate structs, 
             so we don't need raw_data_array anymore*/
             free(raw_data_array);
 
             /*now build a MIDIEvent list for each track, finishing each MIDITrack structure*/
             for (int i = 0; i < f->numtracks; i++)
             {
-                f->tracks[i].numEvents = countMIDIEvents(f->tracks[i].data, f->tracks[i].length);
+                f->tracks[i].numEvents = countMIDIEvents(f->tracks[i].unparsed_data, f->tracks[i].length);
                 f->tracks[i].events = malloc(f->tracks[i].numEvents * sizeof(struct MIDIEvent));
-                parseMIDIEvents(f->tracks[i].data, f->tracks[i].length, f->tracks[i].events);
+                parseMIDIEvents(f->tracks[i].unparsed_data, f->tracks[i].length, f->tracks[i].events);
             }
 
             /*MIDIFile is completely parsed, now print*/
@@ -731,7 +750,7 @@ int main(int argc, char *argv[])
                 }
 
                 free(f->tracks[i].events);
-                free(f->tracks[i].data);
+                free(f->tracks[i].unparsed_data);
             }
 
             free(f->tracks);
