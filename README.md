@@ -14,3 +14,6 @@ Consult [Makefile](https://github.com/adambduncan/programma-obscura/blob/master/
 
 ---
 
+[FSharpMIDIParse.fsx](https://github.com/adambduncan/programma-obscura/blob/master/FSharpMIDIParse/FSharpMIDIParse.fsx)
+F# version of midi-text-dump
+

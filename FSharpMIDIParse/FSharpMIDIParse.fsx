@@ -97,9 +97,6 @@ let printMIDIFileEvent event =
     printf "\n"
 
 
-
-
-
 // test/print section
 
 let TrackBytes =
