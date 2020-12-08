@@ -18,7 +18,7 @@ Consult [Makefile](https://github.com/adambduncan/programma-obscura/blob/master/
 
 [FSharpMIDIParse.fsx](https://github.com/adambduncan/programma-obscura/blob/master/FSharpMIDIParse/FSharpMIDIParse.fsx) - F# version of midi-text-dump, or at least the track parsing part.
 
-Even if you're not used to ML-style programming languages (OCaml, F#, Haskell, Standard ML), this version should be easier to understand than the C version above, mainly due to brevity. More refactoring and clarity edits are forthcoming, because the mainly purpose of this is to document the MIDI file format in a more programmer-friendly way.
+Even if you're not used to ML-style programming languages (OCaml, F#, Haskell, Standard ML), this version should be easier to understand than the C version above, mainly due to brevity. More refactoring and clarity edits are forthcoming, because the main purpose of this is to document the MIDI file format in a more programmer-friendly way. If you're looking for a MIDI library to use in a project, you will likely want to look elsewhere, but if you want to use it, help yourself.
 
 Just an F# script (.fsx), not a full dotnet project. Need to expand it into a full dotnet project with the same (or better) command-line functionality as the C version.
 
