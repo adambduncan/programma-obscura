@@ -14,5 +14,5 @@ Consult [Makefile](https://github.com/adambduncan/programma-obscura/blob/master/
 
 ---
 
-[FSharpMIDIParse.fsx](https://github.com/adambduncan/programma-obscura/blob/master/FSharpMIDIParse/FSharpMIDIParse.fsx) - F# version of midi-text-dump. Just an F# script (.fsx), not a full dotnet project
+[FSharpMIDIParse.fsx](https://github.com/adambduncan/programma-obscura/blob/master/FSharpMIDIParse/FSharpMIDIParse.fsx) - F# version of midi-text-dump, or at least the track parsing part. Just an F# script (.fsx), not a full dotnet project
 
